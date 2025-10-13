@@ -2,177 +2,430 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Telegram Website</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earn Money Mining App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f7fa;
+      background: #f0f4f8;
       color: #333;
       line-height: 1.6;
+      overflow-x: hidden;
     }
-    header {
-      background: linear-gradient(135deg, #0088cc, #005f8c);
+    .header {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
       color: white;
-      padding: 30px 20px;
+      padding: 20px;
       text-align: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: relative;
     }
-    header h1 {
-      margin-bottom: 10px;
-      font-size: 2.2rem;
+    .miner-title {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
     }
-    nav {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      background: #004b6f;
-      padding: 12px;
+    .timestamp {
+      font-size: 0.9rem;
+      opacity: 0.9;
     }
-    nav a {
-      text-decoration: none;
+    .level-desc-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
       color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: color 0.3s;
-    }
-    nav a:hover {
-      color: #ffe600;
-    }
-    section {
-      display: none;
-      padding: 50px 20px;
-      max-width: 900px;
-      margin: auto;
-      text-align: center;
-    }
-    section.active { display: block; }
-    section h2 {
-      margin-bottom: 20px;
-      color: #0088cc;
-      font-size: 1.8rem;
-    }
-    section p {
-      margin-bottom: 15px;
-      font-size: 1.1rem;
-    }
-    .card {
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin: 20px auto;
-      max-width: 700px;
-    }
-    footer {
-      background: #004b6f;
-      color: white;
-      text-align: center;
-      padding: 20px;
-      margin-top: 50px;
-    }
-    button {
-      padding: 12px 20px;
-      margin-top: 20px;
-      background: #0088cc;
-      color: white;
-      border: none;
-      border-radius: 6px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
       cursor: pointer;
       transition: background 0.3s;
     }
-    button:hover {
-      background: #0070aa;
+    .level-desc-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+      background: white;
+      margin: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #2E7D32;
+    }
+    .stat-change {
+      font-size: 0.8rem;
+      color: #4CAF50;
+      margin-top: 5px;
+    }
+    .progress-section {
+      padding: 20px;
+      background: white;
+      margin: 0 20px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #FFEB3B);
+      width: 40%; /* Example progress */
+      transition: width 0.3s ease;
+    }
+    .progress-text {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #2E7D32;
+      margin-bottom: 10px;
+    }
+    .upgrade-btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .upgrade-btn:hover {
+      transform: scale(1.02);
+    }
+    .records-section {
+      padding: 20px;
+      background: white;
+      margin: 0 20px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .records-title {
+      text-align: center;
+      font-size: 1.3rem;
+      color: #2E7D32;
+      margin-bottom: 20px;
+    }
+    .records-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      text-align: center;
+    }
+    .record-item {
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+    }
+    .record-item.active {
+      border-color: #4CAF50;
+      background: #e8f5e8;
+    }
+    .record-label {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .record-value {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2E7D32;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      padding: 5px;
+      transition: color 0.3s;
+      color: #999;
+    }
+    .nav-item.active {
+      color: #4CAF50;
+    }
+    .nav-item:hover {
+      color: #2E7D32;
+    }
+    .nav-icon {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+    .nav-label {
+      font-size: 0.8rem;
+    }
+    section {
+      display: none;
+      min-height: calc(100vh - 120px);
+      padding-bottom: 80px;
+    }
+    section.active {
+      display: block;
+    }
+    .welcome-card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin: 20px;
+      text-align: center;
+    }
+    .welcome-card h2 {
+      color: #2E7D32;
+      margin-bottom: 15px;
+    }
+    .earn-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #FFEB3B, #FFC107);
+      color: #2E7D32;
+      border: none;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: transform 0.3s;
+    }
+    .earn-btn:hover {
+      transform: scale(1.05);
+    }
+    .content-placeholder {
+      padding: 40px 20px;
+      text-align: center;
+      color: #666;
+    }
+    .user-greeting {
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px;
+      text-align: center;
+      color: #2E7D32;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🌐 My Telegram Website</h1>
-    <p>A modern example of a Telegram WebApp that feels like a real site</p>
-  </header>
+  <!-- Common Header -->
+  <div class="header">
+    <div class="miner-title">Level Miner 3</div>
+    <div class="timestamp" id="timestamp">04/06/2026 22:24:07</div>
+    <button class="level-desc-btn" onclick="showDesc()">Level Desc</button>
+  </div>
 
-  <nav>
-    <a onclick="showPage('home')">Home</a>
-    <a onclick="showPage('about')">About Us</a>
-    <a onclick="showPage('project')">Our Project</a>
-    <a onclick="showPage('contact')">Contact Us</a>
-  </nav>
-
+  <!-- Home Section -->
   <section id="home" class="active">
-    <div class="card">
-      <h2>Welcome to Our Website</h2>
-      <p id="user">Loading Telegram user...</p>
-      <p>We build amazing projects that connect Telegram with the web.</p>
-      <button onclick="sendData()">Say Hello to Bot</button>
+    <div class="user-greeting" id="userGreeting">Loading user...</div>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-label">Mining Power</div>
+        <div class="stat-value" id="miningPower">100 GH/s</div>
+        <div class="stat-change">+40.00%</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Daily Income</div>
+        <div class="stat-value" id="dailyIncome">$14.400 USD</div>
+      </div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-text">Mining Progress</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
+        <span>$12.178</span>
+        <span>/ $30 USD</span>
+      </div>
+      <button class="upgrade-btn" onclick="upgradePower()">Improving Computing Power</button>
+    </div>
+    <div class="records-section">
+      <div class="records-title">Mining Records</div>
+      <div class="records-grid">
+        <div class="record-item active" onclick="switchRecord('collect')">
+          <div class="record-label">Can Collect</div>
+          <div class="record-value">$36.00</div>
+        </div>
+        <div class="record-item" onclick="switchRecord('received')">
+          <div class="record-label">Received</div>
+          <div class="record-value">$150.00</div>
+        </div>
+        <div class="record-item" onclick="switchRecord('expired')">
+          <div class="record-label">Expired</div>
+          <div class="record-value">$20.50</div>
+        </div>
+      </div>
+      <button class="earn-btn" onclick="collectRewards()" style="margin-top: 20px;">Collect Rewards Now!</button>
     </div>
   </section>
 
-  <section id="about">
-    <div class="card">
-      <h2>About Us</h2>
-      <p>We are a small team passionate about creating Telegram WebApps that look and feel like real websites.</p>
-      <p>Our mission is to make the Telegram experience more interactive and useful for everyone.</p>
+  <!-- Mining Pool Section -->
+  <section id="mining-pool">
+    <div class="content-placeholder">
+      <h2>Mining Pool</h2>
+      <p>Join our mining pool to boost your earnings by up to 50%! Invite friends and earn bonuses.</p>
+      <button class="earn-btn" onclick="joinPool()">Join Pool & Start Earning</button>
     </div>
   </section>
 
-  <section id="project">
-    <div class="card">
-      <h2>Our Project</h2>
-      <p>Our main project is building Telegram WebApps that can:</p>
-      <ul style="text-align:left; display:inline-block;">
-        <li>✔ Open inside Telegram seamlessly</li>
-        <li>✔ Send and receive data from bots</li>
-        <li>✔ Look like modern responsive websites</li>
-        <li>✔ Work in normal browsers too</li>
-      </ul>
+  <!-- InvestPlus Section -->
+  <section id="investplus">
+    <div class="content-placeholder">
+      <h2>Invest+</h2>
+      <p>Invest your earnings wisely. Choose plans from $10 to $1000 with 20-100% ROI in 24 hours.</p>
+      <button class="earn-btn" onclick="investNow()">Invest Now</button>
     </div>
   </section>
 
-  <section id="contact">
-    <div class="card">
-      <h2>Contact Us</h2>
-      <p>If you are viewing this inside Telegram, you can close the app or send us a message directly.</p>
-      <button onclick="closeApp()">Close WebApp</button>
+  <!-- Team Section -->
+  <section id="team">
+    <div class="content-placeholder">
+      <h2>Team</h2>
+      <p>Build your team! Referrals earn you 10% of their mining power. Current team: 5 members.</p>
+      <button class="earn-btn" onclick="inviteTeam()">Invite to Team</button>
     </div>
   </section>
 
-  <footer>
-    <p>© 2025 My Telegram Website | Built with ❤️</p>
-  </footer>
+  <!-- Me Section -->
+  <section id="me">
+    <div class="content-placeholder">
+      <h2>Me</h2>
+      <p>Your total earnings: $250.50 | Lifetime mined: 500 GH/s</p>
+      <p>Upgrade your level to Miner 4 for +20% power boost.</p>
+      <button class="earn-btn" onclick="viewProfile()">View Full Profile</button>
+    </div>
+  </section>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchPage('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('mining-pool')">
+      <div class="nav-icon">⛏️</div>
+      <div class="nav-label">Mining Pool</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('investplus')">
+      <div class="nav-icon">💰</div>
+      <div class="nav-label">Invest+</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('team')">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">Team</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('me')">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">Me</div>
+    </div>
+  </nav>
 
   <script>
     // Init Telegram WebApp
     const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    // Show user info
-    const user = tg.initDataUnsafe?.user;
-    if (user) {
-      document.getElementById("user").innerText =
-        `Hello, ${user.first_name} (@${user.username || "no username"}) 👋`;
-    } else {
-      document.getElementById("user").innerText =
-        "You are viewing this outside Telegram (browser mode).";
+    if (tg) {
+      tg.expand();
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        document.getElementById("userGreeting").innerText = `Hello, ${user.first_name}! Ready to mine and earn? 💰`;
+      } else {
+        document.getElementById("userGreeting").innerText = "Welcome to Earn Money Mining! Start earning today.";
+      }
     }
 
-    // Page navigation
-    function showPage(id) {
+    // Update timestamp
+    function updateTime() {
+      const now = new Date();
+      document.getElementById("timestamp").innerText = now.toLocaleString('en-US', { 
+        month: '2-digit', day: '2-digit', year: 'numeric', 
+        hour: '2-digit', minute: '2-digit', second: '2-digit' 
+      });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Page switching
+    function switchPage(id) {
       document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
       document.getElementById(id).classList.add("active");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+      event.currentTarget.classList.add("active");
     }
 
-    // Send data back to bot
-    function sendData() {
-      tg.sendData(JSON.stringify({action: "hello", text: "Hi from WebApp!"}));
+    // Record switching
+    function switchRecord(type) {
+      document.querySelectorAll(".record-item").forEach(item => item.classList.remove("active"));
+      event.currentTarget.classList.add("active");
+      // Simulate update
+      if (type === 'collect') {
+        document.querySelector('.record-value').innerText = '$36.00'; // Example
+      }
     }
 
-    // Close WebApp
-    function closeApp() {
-      tg.close();
+    // Simulate progress
+    let progress = 40;
+    function updateProgress() {
+      const fill = document.getElementById("progressFill");
+      progress = (progress + 0.5) % 100;
+      fill.style.width = progress + '%';
+      if (tg) tg.HapticFeedback.selectionChanged();
     }
+    setInterval(updateProgress, 5000); // Update every 5s
+
+    // Upgrade power
+    function upgradePower() {
+      alert("Upgrading power! +20 GH/s added. Cost: $5 deducted.");
+      document.getElementById("miningPower").innerText = "120 GH/s";
+      if (tg) tg.sendData(JSON.stringify({action: "upgrade", amount: 20}));
+    }
+
+    // Collect rewards
+    function collectRewards() {
+      alert("Rewards collected! +$36 added to your balance. Keep mining!");
+      if (tg) tg.sendData(JSON.stringify({action: "collect", amount: 36}));
+    }
+
+    // Other actions (placeholders)
+    function joinPool() { alert("Joined pool! Earnings boosted by 50%."); }
+    function investNow() { alert("Investment started! Expected ROI: 30% in 24h."); }
+    function inviteTeam() { alert("Share link sent! Earn 10% referral bonus."); }
+    function viewProfile() { alert("Profile viewed. Total earnings: $250.50"); }
+    function showDesc() { alert("Level 3 Miner: Unlocks 100 GH/s base power and daily bonuses."); }
+
+    // Send hello on load
+    if (tg) tg.sendData(JSON.stringify({action: "init", text: "App loaded!"}));
   </script>
 </body>
 </html>
