@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Telegram Website</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #0088cc, #005f8c);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    header h1 {
+      margin-bottom: 10px;
+      font-size: 2.2rem;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background: #004b6f;
+      padding: 12px;
+    }
+    nav a {
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #ffe600;
+    }
+    section {
+      display: none;
+      padding: 50px 20px;
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+    }
+    section.active { display: block; }
+    section h2 {
+      margin-bottom: 20px;
+      color: #0088cc;
+      font-size: 1.8rem;
+    }
+    section p {
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin: 20px auto;
+      max-width: 700px;
+    }
+    footer {
+      background: #004b6f;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: 50px;
+    }
+    button {
+      padding: 12px 20px;
+      margin-top: 20px;
+      background: #0088cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0070aa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌐 My Telegram Website</h1>
+    <p>A modern example of a Telegram WebApp that feels like a real site</p>
+  </header>
+
+  <nav>
+    <a onclick="showPage('home')">Home</a>
+    <a onclick="showPage('about')">About Us</a>
+    <a onclick="showPage('project')">Our Project</a>
+    <a onclick="showPage('contact')">Contact Us</a>
+  </nav>
+
+  <section id="home" class="active">
+    <div class="card">
+      <h2>Welcome to Our Website</h2>
+      <p id="user">Loading Telegram user...</p>
+      <p>We build amazing projects that connect Telegram with the web.</p>
+      <button onclick="sendData()">Say Hello to Bot</button>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="card">
+      <h2>About Us</h2>
+      <p>We are a small team passionate about creating Telegram WebApps that look and feel like real websites.</p>
+      <p>Our mission is to make the Telegram experience more interactive and useful for everyone.</p>
+    </div>
+  </section>
+
+  <section id="project">
+    <div class="card">
+      <h2>Our Project</h2>
+      <p>Our main project is building Telegram WebApps that can:</p>
+      <ul style="text-align:left; display:inline-block;">
+        <li>✔ Open inside Telegram seamlessly</li>
+        <li>✔ Send and receive data from bots</li>
+        <li>✔ Look like modern responsive websites</li>
+        <li>✔ Work in normal browsers too</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="card">
+      <h2>Contact Us</h2>
+      <p>If you are viewing this inside Telegram, you can close the app or send us a message directly.</p>
+      <button onclick="closeApp()">Close WebApp</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 My Telegram Website | Built with ❤️</p>
+  </footer>
+
+  <script>
+    // Init Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Show user info
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+      document.getElementById("user").innerText =
+        `Hello, ${user.first_name} (@${user.username || "no username"}) 👋`;
+    } else {
+      document.getElementById("user").innerText =
+        "You are viewing this outside Telegram (browser mode).";
+    }
+
+    // Page navigation
+    function showPage(id) {
+      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Send data back to bot
+    function sendData() {
+      tg.sendData(JSON.stringify({action: "hello", text: "Hi from WebApp!"}));
+    }
+
+    // Close WebApp
+    function closeApp() {
+      tg.close();
+    }
+  </script>
+</body>
+</html>
