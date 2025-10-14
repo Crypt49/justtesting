@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Earn Money Mining App</title>
+  <title>Solana Investment Dashboard</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -22,7 +24,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       position: relative;
     }
-    .miner-title {
+    .investor-title {
       font-size: 1.5rem;
       margin-bottom: 5px;
     }
@@ -101,7 +103,7 @@
       color: #2E7D32;
       margin-bottom: 10px;
     }
-    .upgrade-btn {
+    .action-btn {
       display: block;
       width: 100%;
       padding: 15px;
@@ -113,8 +115,9 @@
       font-weight: bold;
       cursor: pointer;
       transition: transform 0.3s;
+      margin-top: 10px;
     }
-    .upgrade-btn:hover {
+    .action-btn:hover {
       transform: scale(1.02);
     }
     .records-section {
@@ -236,196 +239,334 @@
       text-align: center;
       color: #2E7D32;
     }
+    .wallet-status {
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px;
+      text-align: center;
+      color: #2E7D32;
+    }
+    .qr-container {
+      text-align: center;
+      margin: 20px;
+    }
+    .qr-canvas {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100%;
+      max-width: 200px;
+      margin: 10px;
+    }
+    .admin-panel {
+      padding: 20px;
+      background: white;
+      margin: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .admin-panel input {
+      width: 100px;
+    }
+    #transactions {
+      list-style: none;
+    }
+    #transactions li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
   </style>
 </head>
 <body>
   <!-- Common Header -->
   <div class="header">
-    <div class="miner-title">Level Miner 3</div>
-    <div class="timestamp" id="timestamp">04/06/2026 22:24:07</div>
-    <button class="level-desc-btn" onclick="showDesc()">Level Desc</button>
+    <div class="investor-title">Solana Investment Dashboard</div>
+    <div class="timestamp" id="timestamp">10/14/2025 12:00:00</div>
+    <button class="level-desc-btn" onclick="showDesc()">Info</button>
   </div>
 
-  <!-- Home Section -->
+  <!-- Home Section: Dashboard -->
   <section id="home" class="active">
     <div class="user-greeting" id="userGreeting">Loading user...</div>
+    <div class="wallet-status" id="walletStatus">Connect your Solana wallet to start investing.</div>
+    <button class="action-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
     <div class="stats-grid">
       <div class="stat-item">
-        <div class="stat-label">Mining Power</div>
-        <div class="stat-value" id="miningPower">100 GH/s</div>
-        <div class="stat-change">+40.00%</div>
+        <div class="stat-label">Investment Balance</div>
+        <div class="stat-value" id="balance">0 SOL</div>
+        <div class="stat-change" id="dailyProfit">+1.00% Daily</div>
       </div>
       <div class="stat-item">
-        <div class="stat-label">Daily Income</div>
-        <div class="stat-value" id="dailyIncome">$14.400 USD</div>
+        <div class="stat-label">Daily Rewards</div>
+        <div class="stat-value" id="dailyRewards">0.00 SOL</div>
       </div>
     </div>
     <div class="progress-section">
-      <div class="progress-text">Mining Progress</div>
+      <div class="progress-text">Profit Accrual Progress</div>
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
       </div>
       <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
-        <span>$12.178</span>
-        <span>/ $30 USD</span>
+        <span id="currentProfit">0.00</span>
+        <span>/ 24 Hours</span>
       </div>
-      <button class="upgrade-btn" onclick="upgradePower()">Improving Computing Power</button>
+      <button class="action-btn" onclick="claimRewards()">Claim Daily Rewards</button>
     </div>
     <div class="records-section">
-      <div class="records-title">Mining Records</div>
-      <div class="records-grid">
-        <div class="record-item active" onclick="switchRecord('collect')">
-          <div class="record-label">Can Collect</div>
-          <div class="record-value">$36.00</div>
-        </div>
-        <div class="record-item" onclick="switchRecord('received')">
-          <div class="record-label">Received</div>
-          <div class="record-value">$150.00</div>
-        </div>
-        <div class="record-item" onclick="switchRecord('expired')">
-          <div class="record-label">Expired</div>
-          <div class="record-value">$20.50</div>
-        </div>
+      <div class="records-title">Transaction Records</div>
+      <ul id="transactions">
+        <li>No transactions yet.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Deposit Section -->
+  <section id="deposit">
+    <div class="content-placeholder">
+      <h2>Deposit SOL</h2>
+      <p>Deposit into the pool wallet for automatic 1% daily rewards.</p>
+      <input type="number" id="depositAmount" placeholder="Amount in SOL" step="0.01">
+      <button class="earn-btn" onclick="generateDepositQR()">Generate Payment QR</button>
+      <div class="qr-container" id="qrContainer" style="display:none;">
+        <canvas class="qr-canvas" id="qrCanvas"></canvas>
+        <p>Scan with your Solana wallet to deposit.</p>
       </div>
-      <button class="earn-btn" onclick="collectRewards()" style="margin-top: 20px;">Collect Rewards Now!</button>
+      <p><strong>Pool Wallet:</strong> <span id="poolAddress">YourPoolPubkeyHere</span></p>
     </div>
   </section>
 
-  <!-- Mining Pool Section -->
-  <section id="mining-pool">
+  <!-- Withdraw Section -->
+  <section id="withdraw">
     <div class="content-placeholder">
-      <h2>Mining Pool</h2>
-      <p>Join our mining pool to boost your earnings by up to 50%! Invite friends and earn bonuses.</p>
-      <button class="earn-btn" onclick="joinPool()">Join Pool & Start Earning</button>
+      <h2>Instant Withdraw</h2>
+      <p>Withdraw your balance + rewards instantly.</p>
+      <input type="number" id="withdrawAmount" placeholder="Amount in SOL" step="0.01">
+      <button class="earn-btn" onclick="withdrawFunds()">Withdraw Now</button>
+      <p id="withdrawStatus"></p>
     </div>
   </section>
 
-  <!-- InvestPlus Section -->
-  <section id="investplus">
+  <!-- Rewards Section -->
+  <section id="rewards">
     <div class="content-placeholder">
-      <h2>Invest+</h2>
-      <p>Invest your earnings wisely. Choose plans from $10 to $1000 with 20-100% ROI in 24 hours.</p>
-      <button class="earn-btn" onclick="investNow()">Invest Now</button>
+      <h2>Rewards & Profits</h2>
+      <p>Total rewards earned: <span id="totalRewards">0.00 SOL</span></p>
+      <p>Current rate: 1% daily (adjustable by admin)</p>
+      <button class="earn-btn" onclick="adjustRate()">View Rate Settings</button>
     </div>
   </section>
 
-  <!-- Team Section -->
-  <section id="team">
-    <div class="content-placeholder">
-      <h2>Team</h2>
-      <p>Build your team! Referrals earn you 10% of their mining power. Current team: 5 members.</p>
-      <button class="earn-btn" onclick="inviteTeam()">Invite to Team</button>
-    </div>
-  </section>
-
-  <!-- Me Section -->
-  <section id="me">
-    <div class="content-placeholder">
-      <h2>Me</h2>
-      <p>Your total earnings: $250.50 | Lifetime mined: 500 GH/s</p>
-      <p>Upgrade your level to Miner 4 for +20% power boost.</p>
-      <button class="earn-btn" onclick="viewProfile()">View Full Profile</button>
+  <!-- Admin Section -->
+  <section id="admin" style="display:none;">
+    <div class="admin-panel">
+      <h2>Admin Control Panel</h2>
+      <label>Daily Rate (%): <input type="number" id="rateInput" value="1" step="0.1"></label>
+      <button class="action-btn" onclick="updateRate()">Update Rate</button>
+      <label>Payout Interval (hours): <input type="number" id="intervalInput" value="24"></label>
+      <button class="action-btn" onclick="updateInterval()">Update Interval</button>
+      <h3>Transaction Logs</h3>
+      <ul id="adminTransactions"></ul>
     </div>
   </section>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchPage('home')">
-      <div class="nav-icon">🏠</div>
-      <div class="nav-label">Home</div>
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">Dashboard</div>
     </div>
-    <div class="nav-item" onclick="switchPage('mining-pool')">
-      <div class="nav-icon">⛏️</div>
-      <div class="nav-label">Mining Pool</div>
-    </div>
-    <div class="nav-item" onclick="switchPage('investplus')">
+    <div class="nav-item" onclick="switchPage('deposit')">
       <div class="nav-icon">💰</div>
-      <div class="nav-label">Invest+</div>
+      <div class="nav-label">Deposit</div>
     </div>
-    <div class="nav-item" onclick="switchPage('team')">
-      <div class="nav-icon">👥</div>
-      <div class="nav-label">Team</div>
+    <div class="nav-item" onclick="switchPage('withdraw')">
+      <div class="nav-icon">📤</div>
+      <div class="nav-label">Withdraw</div>
     </div>
-    <div class="nav-item" onclick="switchPage('me')">
-      <div class="nav-icon">👤</div>
-      <div class="nav-label">Me</div>
+    <div class="nav-item" onclick="switchPage('rewards')">
+      <div class="nav-icon">⭐</div>
+      <div class="nav-label">Rewards</div>
+    </div>
+    <div class="nav-item" onclick="switchPage('admin')">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-label">Admin</div>
     </div>
   </nav>
 
   <script>
     // Init Telegram WebApp
     const tg = window.Telegram.WebApp;
+    let isAdmin = false;
     if (tg) {
       tg.expand();
       const user = tg.initDataUnsafe?.user;
       if (user) {
-        document.getElementById("userGreeting").innerText = `Hello, ${user.first_name}! Ready to mine and earn? 💰`;
+        document.getElementById("userGreeting").innerText = `Hello, ${user.first_name}! Ready to invest? 💰`;
+        isAdmin = user.username === 'youradminusername'; // Replace with actual admin
+        if (isAdmin) {
+          document.getElementById('admin').style.display = 'block';
+        }
       } else {
-        document.getElementById("userGreeting").innerText = "Welcome to Earn Money Mining! Start earning today.";
+        document.getElementById("userGreeting").innerText = "Welcome to Solana Investment Dashboard!";
       }
     }
 
-    // Update timestamp
-    function updateTime() {
-      const now = new Date();
-      document.getElementById("timestamp").innerText = now.toLocaleString('en-US', { 
-        month: '2-digit', day: '2-digit', year: 'numeric', 
-        hour: '2-digit', minute: '2-digit', second: '2-digit' 
-      });
-    }
-    setInterval(updateTime, 1000);
-    updateTime();
+    // Solana setup
+    const { Connection, PublicKey, LAMPORTS_PER_SOL } = solanaWeb3;
+    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+    const POOL_ADDRESS = new PublicKey('YourPoolPubkeyHere'); // Replace with actual pool PDA or address
+    document.getElementById('poolAddress').innerText = POOL_ADDRESS.toString();
 
-    // Page switching
+    let walletPubkey = null;
+    let balance = parseFloat(localStorage.getItem('investmentBalance') || '0');
+    let rate = parseFloat(localStorage.getItem('dailyRate') || '1');
+    let lastCredit = parseInt(localStorage.getItem('lastCredit') || Date.now().toString());
+    let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+
+    // Update UI
+    function updateUI() {
+      document.getElementById('balance').innerText = `${balance.toFixed(4)} SOL`;
+      document.getElementById('dailyProfit').innerText = `+${rate}% Daily`;
+      const daysPassed = (Date.now() - lastCredit) / (1000 * 60 * 60 * 24);
+      const profit = balance * (rate / 100) * Math.floor(daysPassed);
+      document.getElementById('dailyRewards').innerText = `${profit.toFixed(4)} SOL`;
+      document.getElementById('totalRewards').innerText = `${(parseFloat(localStorage.getItem('totalRewards') || '0') + profit).toFixed(4)} SOL`;
+      const progress = ((Date.now() - lastCredit) % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
+      document.getElementById('progressFill').style.width = `${(progress / 24) * 100}%`;
+      document.getElementById('currentProfit').innerText = `${(profit / Math.floor(daysPassed) || 0).toFixed(4)}`;
+      updateTransactions();
+      if (walletPubkey) {
+        document.getElementById('walletStatus').innerText = `Connected: ${walletPubkey.toString().slice(0,8)}...`;
+        document.getElementById('connectBtn').style.display = 'none';
+      }
+    }
+
+    function updateTransactions() {
+      const list = document.getElementById('transactions');
+      list.innerHTML = transactions.map(tx => `<li>${tx.type}: ${tx.amount} SOL - ${new Date(tx.date).toLocaleString()}</li>`).join('') || '<li>No transactions yet.</li>';
+      if (isAdmin) {
+        document.getElementById('adminTransactions').innerHTML = transactions.map(tx => `<li>${tx.user}: ${tx.type} ${tx.amount} SOL</li>`).join('');
+      }
+    }
+
+    // Wallet connection (Phantom)
+    async function connectWallet() {
+      if ('solana' in window && window.solana.isPhantom) {
+        try {
+          const resp = await window.solana.connect();
+          walletPubkey = resp.publicKey;
+          updateUI();
+          if (tg) tg.sendData(JSON.stringify({action: 'wallet_connected', pubkey: walletPubkey.toString()}));
+        } catch (err) {
+          alert('Failed to connect wallet');
+        }
+      } else {
+        alert('Phantom wallet not found. Install from phantom.app');
+      }
+    }
+
+    // Generate Solana Pay QR for deposit
+    async function generateDepositQR() {
+      const amount = parseFloat(document.getElementById('depositAmount').value);
+      if (!amount || amount <= 0) return alert('Enter valid amount');
+      const reference = new PublicKey(Array.from({length: 32}, () => Math.floor(Math.random() * 256))); // Random reference
+      const transferRequestUrl = `solana:${solanaPay.createTransferUrl({
+        recipient: POOL_ADDRESS,
+        amount: amount * LAMPORTS_PER_SOL,
+        reference,
+        labels: { amount: `${amount} SOL`, message: 'Investment Deposit' }
+      })}`;
+      const qrContainer = document.getElementById('qrContainer');
+      QRCode.toCanvas(document.getElementById('qrCanvas'), transferRequestUrl, { width: 200 }, (err) => {
+        if (err) alert('QR generation failed');
+      });
+      qrContainer.style.display = 'block';
+      // Send to bot for confirmation
+      if (tg) tg.sendData(JSON.stringify({action: 'deposit_request', amount, reference: reference.toString()}));
+    }
+
+    // Simulate withdraw (in real: bot handles transfer from pool)
+    async function withdrawFunds() {
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      if (!amount || amount > balance) return alert('Invalid amount');
+      balance -= amount;
+      localStorage.setItem('investmentBalance', balance.toString());
+      transactions.push({type: 'Withdraw', amount: -amount, date: Date.now(), user: tg?.initDataUnsafe?.user?.username || 'user'});
+      localStorage.setItem('transactions', JSON.stringify(transactions));
+      updateUI();
+      document.getElementById('withdrawStatus').innerText = 'Withdraw processed! Check your wallet.';
+      if (tg) tg.sendData(JSON.stringify({action: 'withdraw', amount, pubkey: walletPubkey?.toString()}));
+      // In real: Generate signed tx from pool, but requires backend
+    }
+
+    // Claim rewards
+    function claimRewards() {
+      const daysPassed = (Date.now() - lastCredit) / (1000 * 60 * 60 * 24);
+      const profit = balance * (rate / 100) * Math.floor(daysPassed);
+      if (profit > 0) {
+        balance += profit;
+        localStorage.setItem('investmentBalance', balance.toString());
+        let totalRewards = parseFloat(localStorage.getItem('totalRewards') || '0');
+        totalRewards += profit;
+        localStorage.setItem('totalRewards', totalRewards.toString());
+        lastCredit = Date.now();
+        localStorage.setItem('lastCredit', lastCredit.toString());
+        transactions.push({type: 'Reward Claim', amount: profit, date: Date.now(), user: tg?.initDataUnsafe?.user?.username || 'user'});
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        updateUI();
+        alert(`Claimed ${profit.toFixed(4)} SOL in rewards!`);
+      } else {
+        alert('No rewards to claim yet.');
+      }
+      if (tg) tg.sendData(JSON.stringify({action: 'claim_rewards', profit}));
+    }
+
+    // Admin functions
+    function updateRate() {
+      rate = parseFloat(document.getElementById('rateInput').value);
+      localStorage.setItem('dailyRate', rate.toString());
+      alert(`Rate updated to ${rate}%`);
+      updateUI();
+    }
+
+    function updateInterval() {
+      const interval = parseInt(document.getElementById('intervalInput').value);
+      // Simulate interval change, e.g., adjust lastCredit logic if needed
+      alert(`Interval updated to ${interval} hours`);
+    }
+
+    // Other functions
     function switchPage(id) {
+      if (!isAdmin && id === 'admin') return;
       document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
       document.getElementById(id).classList.add("active");
       document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
       event.currentTarget.classList.add("active");
     }
 
-    // Record switching
-    function switchRecord(type) {
-      document.querySelectorAll(".record-item").forEach(item => item.classList.remove("active"));
-      event.currentTarget.classList.add("active");
-      // Simulate update
-      if (type === 'collect') {
-        document.querySelector('.record-value').innerText = '$36.00'; // Example
-      }
+    function showDesc() {
+      alert('Solana Investment Pool: Deposit SOL, earn 1% daily auto-rewards, instant withdraws. Admin manages rates.');
     }
 
-    // Simulate progress
-    let progress = 40;
-    function updateProgress() {
-      const fill = document.getElementById("progressFill");
-      progress = (progress + 0.5) % 100;
-      fill.style.width = progress + '%';
-      if (tg) tg.HapticFeedback.selectionChanged();
+    // Update timestamp
+    function updateTime() {
+      const now = new Date();
+      document.getElementById("timestamp").innerText = now.toLocaleString();
     }
-    setInterval(updateProgress, 5000); // Update every 5s
+    setInterval(updateTime, 1000);
+    updateTime();
 
-    // Upgrade power
-    function upgradePower() {
-      alert("Upgrading power! +20 GH/s added. Cost: $5 deducted.");
-      document.getElementById("miningPower").innerText = "120 GH/s";
-      if (tg) tg.sendData(JSON.stringify({action: "upgrade", amount: 20}));
-    }
+    // Init
+    updateUI();
+    setInterval(updateUI, 1000); // Real-time updates
 
-    // Collect rewards
-    function collectRewards() {
-      alert("Rewards collected! +$36 added to your balance. Keep mining!");
-      if (tg) tg.sendData(JSON.stringify({action: "collect", amount: 36}));
-    }
-
-    // Other actions (placeholders)
-    function joinPool() { alert("Joined pool! Earnings boosted by 50%."); }
-    function investNow() { alert("Investment started! Expected ROI: 30% in 24h."); }
-    function inviteTeam() { alert("Share link sent! Earn 10% referral bonus."); }
-    function viewProfile() { alert("Profile viewed. Total earnings: $250.50"); }
-    function showDesc() { alert("Level 3 Miner: Unlocks 100 GH/s base power and daily bonuses."); }
-
-    // Send hello on load
-    if (tg) tg.sendData(JSON.stringify({action: "init", text: "App loaded!"}));
+    // Send init to bot
+    if (tg) tg.sendData(JSON.stringify({action: "init", text: "Dashboard loaded!"}));
   </script>
 </body>
 </html>
