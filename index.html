@@ -1,494 +1,266 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Quant Investment Dashboard</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f8f9ff;
-      color: #333;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-    .header {
-      background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-      color: white;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .assets-info {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .assets-label {
-      font-size: 0.8rem;
-      opacity: 0.9;
-    }
-    .assets-value {
-      font-size: 1.4rem;
-      font-weight: bold;
-    }
-    .income-info {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-    .income-label {
-      font-size: 0.8rem;
-      opacity: 0.9;
-    }
-    .income-value {
-      font-size: 1.1rem;
-    }
-    .top-up-btn {
-      background: #FF9800;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .top-up-btn:hover {
-      background: #F57C00;
-    }
-    .nav-bar {
-      display: flex;
-      justify-content: space-around;
-      background: #E1BEE7;
-      padding: 10px 0;
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #7B1FA2;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-    .nav-icon {
-      font-size: 1.2rem;
-      margin-bottom: 4px;
-    }
-    .reward-banner {
-      background: linear-gradient(135deg, #FF9800, #F57C00);
-      color: white;
-      padding: 15px;
-      text-align: center;
-      margin: 10px;
-      border-radius: 8px;
-    }
-    .reward-text {
-      font-size: 0.9rem;
-      margin-bottom: 8px;
-    }
-    .post-btn {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid white;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .post-btn:hover {
-      background: rgba(255,255,255,0.3);
-    }
-    .main-content {
-      padding: 20px;
-    }
-    .trading-section {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .trading-title {
-      color: #7B1FA2;
-      font-size: 1.1rem;
-      margin-bottom: 5px;
-    }
-    .trading-desc {
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .profit-display {
-      text-align: right;
-    }
-    .profit-value {
-      font-size: 1.4rem;
-      color: #FF9800;
-      font-weight: bold;
-    }
-    .team-section {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .team-title {
-      color: #7B1FA2;
-      font-size: 1.1rem;
-    }
-    .team-profit {
-      font-size: 1.4rem;
-      color: #FF9800;
-      font-weight: bold;
-    }
-    .robot-section {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      text-align: center;
-    }
-    .robot-title {
-      color: #7B1FA2;
-      font-size: 1.1rem;
-      margin-bottom: 10px;
-    }
-    .daily-profit {
-      font-size: 1.2rem;
-      color: #FF9800;
-      font-weight: bold;
-    }
-    .bot-card {
-      background: #FAF5FF;
-      border: 1px solid #E1BEE7;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .bot-left {
-      display: flex;
-      align-items: center;
-    }
-    .bot-icon {
-      font-size: 2rem;
-      margin-right: 15px;
-    }
-    .bot-details {
-      text-align: left;
-    }
-    .bot-name {
-      font-size: 1rem;
-      color: #7B1FA2;
-      margin-bottom: 5px;
-    }
-    .bot-stat {
-      font-size: 0.8rem;
-      color: #666;
-      margin-bottom: 2px;
-    }
-    .bot-value {
-      font-size: 1rem;
-      color: #333;
-      font-weight: bold;
-    }
-    .purchase-btn {
-      background: #FF9800;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .purchase-btn:hover {
-      background: #F57C00;
-    }
-    .referral-section {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      text-align: center;
-    }
-    .referral-title {
-      color: #7B1FA2;
-      font-size: 1rem;
-      margin-bottom: 10px;
-    }
-    .referral-progress {
-      font-size: 0.9rem;
-      color: #666;
-      margin-bottom: 10px;
-    }
-    .invite-friends {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .friend-icon {
-      font-size: 1.5rem;
-      color: #FF9800;
-    }
-    .rules-link {
-      color: #7B1FA2;
-      text-decoration: none;
-      font-size: 0.8rem;
-    }
-    section {
-      display: none;
-    }
-    section.active {
-      display: block;
-    }
-    .content-placeholder {
-      padding: 40px 20px;
-      text-align: center;
-      color: #666;
-    }
-  </style>
-</head>
-<body>
-  <!-- Header -->
-  <div class="header">
-    <div class="assets-info">
-      <div class="assets-label">USDT Total Assets</div>
-      <div class="assets-value" id="totalAssets">10.00</div>
-    </div>
-    <div class="income-info">
-      <div class="income-label">Today's Income</div>
-      <div class="income-value" id="todayIncome">0.00 USDT</div>
-    </div>
-    <button class="top-up-btn" onclick="topUp()">Top Up</button>
-  </div>
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <header style="text-align: center; color: white; margin-bottom: 40px;">
+            <h1 style="font-size: 3rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">🎯 Find Work</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9;">Discover micro tasks that match your skills and start earning today</p>
+        </header>
 
-  <!-- Nav Bar -->
-  <div class="nav-bar">
-    <div class="nav-item active" onclick="switchSection('invest')">
-      <div class="nav-icon">💰</div>
-      <div>Invest</div>
-    </div>
-    <div class="nav-item" onclick="switchSection('ai-quant')">
-      <div class="nav-icon">🤖</div>
-      <div>AI Quantitative</div>
-    </div>
-    <div class="nav-item" onclick="switchSection('lottery')">
-      <div class="nav-icon">🎟️</div>
-      <div>Lottery</div>
-    </div>
-    <div class="nav-item" onclick="switchSection('super-rebate')">
-      <div class="nav-icon">⭐</div>
-      <div>Super Rebate</div>
-    </div>
-  </div>
+        <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 30px;">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                <input type="text" id="searchInput" placeholder="Search for tasks..." style="flex: 1; min-width: 250px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem;">
+                <button onclick="filterTasks()" style="padding: 15px 35px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer;">Search</button>
+            </div>
 
-  <!-- Reward Banner -->
-  <div class="reward-banner">
-    <div class="reward-text">2.00 USDT Reward</div>
-    <div class="reward-text">Post in Telegram group and contact customer service to claim the 2.00 USDT reward</div>
-    <button class="post-btn" onclick="postReward()">Post</button>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Invest Section -->
-    <section id="invest" class="active">
-      <div class="content-placeholder">
-        <h2>Invest</h2>
-        <p>Manage your investments here.</p>
-        <button class="purchase-btn" onclick="invest()">Invest Now</button>
-      </div>
-    </section>
-
-    <!-- AI Quantitative Section -->
-    <section id="ai-quant">
-      <div class="trading-section">
-        <div>
-          <div class="trading-title">AI Quantitative Trading</div>
-          <div class="trading-desc">Automatic trading, guaranteed daily profits</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;" id="categories">
+                <button onclick="filterByCategory('all', this)" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: 2px solid #667eea; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">All Tasks</button>
+                <button onclick="filterByCategory('influencer', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Influencers</button>
+                <button onclick="filterByCategory('social-media', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Social Media</button>
+                <button onclick="filterByCategory('design', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Designers</button>
+                <button onclick="filterByCategory('blogging', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Bloggers</button>
+                <button onclick="filterByCategory('development', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Developers</button>
+                <button onclick="filterByCategory('coaching', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Life Coaches</button>
+                <button onclick="filterByCategory('training', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Trainers</button>
+                <button onclick="filterByCategory('trading', this)" style="padding: 10px 20px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 25px; cursor: pointer; font-size: 0.95rem; font-weight: 500;">Trading</button>
+            </div>
         </div>
-        <div class="profit-display">
-          <div class="profit-value" id="aiProfit">0.00 USDT</div>
-        </div>
-      </div>
 
-      <div class="team-section">
-        <div class="team-title">Team Profit</div>
-        <div class="team-profit" id="teamProfit">0.00 USDT</div>
-      </div>
+        <div id="tasksGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; margin-top: 30px;"></div>
+    </div>
+</div>
 
-      <div class="robot-section">
-        <div class="robot-title">AI Quantitative Robot</div>
-        <div class="daily-profit" id="robotDaily">0.01 USDT</div>
-      </div>
+<script>
+    const tasks = [
+        {
+            id: 1,
+            category: 'influencer',
+            title: 'Instagram Story Promotion',
+            description: 'Post a promotional story on your Instagram account with provided content and hashtags.',
+            price: '$25',
+            difficulty: 'easy',
+            duration: '1 hour',
+            slots: 5
+        },
+        {
+            id: 2,
+            category: 'social-media',
+            title: 'Facebook Group Management',
+            description: 'Moderate a Facebook group, respond to members, and post daily engaging content.',
+            price: '$150',
+            difficulty: 'medium',
+            duration: '1 week',
+            slots: 2
+        },
+        {
+            id: 3,
+            category: 'design',
+            title: 'Logo Design for Startup',
+            description: 'Create 3 unique logo concepts for a new tech startup with modern aesthetics.',
+            price: '$200',
+            difficulty: 'medium',
+            duration: '3 days',
+            slots: 1
+        },
+        {
+            id: 4,
+            category: 'blogging',
+            title: 'SEO Optimized Blog Article',
+            description: 'Write a 1500-word SEO-optimized article on digital marketing trends.',
+            price: '$80',
+            difficulty: 'medium',
+            duration: '2 days',
+            slots: 3
+        },
+        {
+            id: 5,
+            category: 'development',
+            title: 'WordPress Plugin Customization',
+            description: 'Customize an existing WordPress plugin to add specific functionality.',
+            price: '$300',
+            difficulty: 'hard',
+            duration: '5 days',
+            slots: 1
+        },
+        {
+            id: 6,
+            category: 'coaching',
+            title: 'Career Consultation Session',
+            description: 'Provide a 1-hour career coaching session for young professionals.',
+            price: '$75',
+            difficulty: 'easy',
+            duration: '1 hour',
+            slots: 10
+        },
+        {
+            id: 7,
+            category: 'training',
+            title: 'Fitness Training Video Series',
+            description: 'Create 5 workout videos for beginners with exercise demonstrations.',
+            price: '$250',
+            difficulty: 'medium',
+            duration: '1 week',
+            slots: 2
+        },
+        {
+            id: 8,
+            category: 'trading',
+            title: 'Market Analysis Report',
+            description: 'Analyze current stock market trends and provide a detailed report with recommendations.',
+            price: '$180',
+            difficulty: 'hard',
+            duration: '2 days',
+            slots: 1
+        },
+        {
+            id: 9,
+            category: 'influencer',
+            title: 'YouTube Video Collaboration',
+            description: 'Feature a product in your YouTube video with honest review and demonstration.',
+            price: '$500',
+            difficulty: 'medium',
+            duration: '3 days',
+            slots: 1
+        },
+        {
+            id: 10,
+            category: 'design',
+            title: 'Social Media Graphics Pack',
+            description: 'Design 10 Instagram post templates with brand colors and messaging.',
+            price: '$120',
+            difficulty: 'easy',
+            duration: '2 days',
+            slots: 4
+        },
+        {
+            id: 11,
+            category: 'development',
+            title: 'Mobile App Bug Fixes',
+            description: 'Fix 5 minor bugs in an existing React Native mobile application.',
+            price: '$200',
+            difficulty: 'medium',
+            duration: '3 days',
+            slots: 2
+        },
+        {
+            id: 12,
+            category: 'social-media',
+            title: 'TikTok Content Strategy',
+            description: 'Develop a 30-day content strategy for TikTok with video ideas and posting schedule.',
+            price: '$175',
+            difficulty: 'medium',
+            duration: '4 days',
+            slots: 1
+        }
+    ];
 
-      <!-- Bot Cards -->
-      <div class="bot-card">
-        <div class="bot-left">
-          <div class="bot-icon">🤖</div>
-          <div class="bot-details">
-            <div class="bot-name">AI Quant-A10</div>
-            <div class="bot-stat">Monthly Profit</div>
-            <div class="bot-value">2.00 USDT</div>
-            <div class="bot-stat">Daily Withdrawal</div>
-            <div class="bot-value">2.00 USDT</div>
-            <div class="bot-stat">Maximum Withdrawal</div>
-            <div class="bot-value">230%</div>
-            <div class="bot-stat">Purchase Amount</div>
-            <div class="bot-value">2.00 USDT</div>
-          </div>
-        </div>
-        <button class="purchase-btn" onclick="purchaseBot('A10')">Purchase</button>
-      </div>
+    let currentCategory = 'all';
+    let filteredTasks = [...tasks];
 
-      <div class="bot-card">
-        <div class="bot-left">
-          <div class="bot-icon">🤖</div>
-          <div class="bot-details">
-            <div class="bot-name">AI Quant-A20</div>
-            <div class="bot-stat">Monthly Profit</div>
-            <div class="bot-value">20.00 USDT</div>
-            <div class="bot-stat">Daily Withdrawal</div>
-            <div class="bot-value">20.00 USDT</div>
-            <div class="bot-stat">Maximum Withdrawal</div>
-            <div class="bot-value">20%</div>
-            <div class="bot-stat">Purchase Amount</div>
-            <div class="bot-value">20.00 USDT</div>
-          </div>
-        </div>
-        <button class="purchase-btn" onclick="purchaseBot('A20')">Purchase</button>
-      </div>
+    function renderTasks(tasksToRender) {
+        const grid = document.getElementById('tasksGrid');
+        
+        if (tasksToRender.length === 0) {
+            grid.innerHTML = '<div style="text-align: center; color: white; font-size: 1.2rem; padding: 60px 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">No tasks found. Try a different category or search term.</div>';
+            return;
+        }
 
-      <div class="bot-card">
-        <div class="bot-left">
-          <div class="bot-icon">🤖</div>
-          <div class="bot-details">
-            <div class="bot-name">AI Quant-A50</div>
-            <div class="bot-stat">Monthly Profit</div>
-            <div class="bot-value">50.00 USDT</div>
-            <div class="bot-stat">Daily Withdrawal</div>
-            <div class="bot-value">50.00 USDT</div>
-            <div class="bot-stat">Maximum Withdrawal</div>
-            <div class="bot-value">50%</div>
-            <div class="bot-stat">Purchase Amount</div>
-            <div class="bot-value">50.00 USDT</div>
-          </div>
-        </div>
-        <button class="purchase-btn" onclick="purchaseBot('A50')">Purchase</button>
-      </div>
+        grid.innerHTML = tasksToRender.map(task => {
+            const difficultyColors = {
+                easy: 'background: #d4edda; color: #155724;',
+                medium: 'background: #fff3cd; color: #856404;',
+                hard: 'background: #f8d7da; color: #721c24;'
+            };
 
-      <div class="referral-section">
-        <div class="referral-title">Invite 5 Friends to Buy</div>
-        <div class="referral-progress">Get it for free (0/5)</div>
-        <div class="invite-friends">
-          <span class="friend-icon">👤</span>
-          <span class="friend-icon">👤</span>
-          <span class="friend-icon">👤</span>
-          <span class="friend-icon">👤</span>
-          <span class="friend-icon">👤</span>
-        </div>
-        <a href="#" class="rules-link" onclick="showRules()">Rules</a>
-      </div>
-    </section>
-
-    <!-- Lottery Section -->
-    <section id="lottery">
-      <div class="content-placeholder">
-        <h2>Lottery</h2>
-        <p>Try your luck in the lottery!</p>
-        <button class="purchase-btn" onclick="playLottery()">Play</button>
-      </div>
-    </section>
-
-    <!-- Super Rebate Section -->
-    <section id="super-rebate">
-      <div class="content-placeholder">
-        <h2>Super Rebate</h2>
-        <p>Earn super rebates on investments.</p>
-        <button class="purchase-btn" onclick="claimRebate()">Claim</button>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    // Init Telegram WebApp
-    const tg = window.Telegram.WebApp;
-    if (tg) {
-      tg.expand();
-      const user = tg.initDataUnsafe?.user;
-      if (user) {
-        console.log(`Hello, ${user.first_name}! Ready to invest?`);
-      }
+            return `
+                <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0,0,0,0.1)';">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">${getCategoryName(task.category)}</span>
+                        <span style="font-size: 1.5rem; font-weight: 700; color: #2ecc71;">${task.price}</span>
+                    </div>
+                    <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 10px; color: #2c3e50;">${task.title}</h3>
+                    <p style="color: #7f8c8d; line-height: 1.6; margin-bottom: 15px;">${task.description}</p>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.9rem; color: #95a5a6; margin-bottom: 15px;">
+                        <span>⏱️ ${task.duration}</span>
+                        <span>👥 ${task.slots} slots available</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #ecf0f1;">
+                        <span style="padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: 600; ${difficultyColors[task.difficulty]}">${task.difficulty.toUpperCase()}</span>
+                        <button onclick="applyForTask(${task.id})" style="padding: 10px 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Apply Now</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
-    // Section switching
-    function switchSection(id) {
-      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
-      event.currentTarget.classList.add("active");
+    function getCategoryName(category) {
+        const names = {
+            'influencer': 'Influencer',
+            'social-media': 'Social Media',
+            'design': 'Design',
+            'blogging': 'Blogging',
+            'development': 'Development',
+            'coaching': 'Coaching',
+            'training': 'Training',
+            'trading': 'Trading'
+        };
+        return names[category] || category;
     }
 
-    // Placeholder functions
-    function topUp() {
-      alert("Top up initiated! Transfer USDT to claim.");
-      if (tg) tg.sendData(JSON.stringify({action: "topup"}));
+    function filterByCategory(category, button) {
+        currentCategory = category;
+        
+        const buttons = document.querySelectorAll('#categories button');
+        buttons.forEach(btn => {
+            btn.style.background = '#f5f5f5';
+            btn.style.color = '#000';
+            btn.style.borderColor = '#e0e0e0';
+        });
+        
+        button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        button.style.color = 'white';
+        button.style.borderColor = '#667eea';
+
+        if (category === 'all') {
+            filteredTasks = [...tasks];
+        } else {
+            filteredTasks = tasks.filter(task => task.category === category);
+        }
+
+        renderTasks(filteredTasks);
     }
 
-    function postReward() {
-      alert("Posted to group! Contact service for 2.00 USDT reward.");
-      if (tg) tg.sendData(JSON.stringify({action: "claim_reward", amount: 2.00}));
+    function filterTasks() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        
+        let tasksToSearch = currentCategory === 'all' 
+            ? tasks 
+            : tasks.filter(task => task.category === currentCategory);
+
+        if (searchTerm) {
+            filteredTasks = tasksToSearch.filter(task => 
+                task.title.toLowerCase().includes(searchTerm) ||
+                task.description.toLowerCase().includes(searchTerm)
+            );
+        } else {
+            filteredTasks = tasksToSearch;
+        }
+
+        renderTasks(filteredTasks);
     }
 
-    function invest() {
-      alert("Investment started!");
+    function applyForTask(taskId) {
+        const task = tasks.find(t => t.id === taskId);
+        alert('You are applying for: ' + task.title + '\n\nIn a live implementation, this would open an application form or redirect to a detailed task page.');
     }
 
-    function purchaseBot(type) {
-      alert(`Purchased AI Quant-${type}!`);
-      if (tg) tg.sendData(JSON.stringify({action: "purchase_bot", type}));
-    }
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            filterTasks();
+        }
+    });
 
-    function playLottery() {
-      alert("Lottery ticket purchased! Good luck.");
-    }
-
-    function claimRebate() {
-      alert("Rebate claimed! +1% bonus added.");
-    }
-
-    function showRules() {
-      alert("Rules: Invite 5 friends to get free bot. Max 230% withdrawal.");
-    }
-
-    // Simulate updates
-    setInterval(() => {
-      // Simulate small income tick
-      const todayIncome = parseFloat(document.getElementById('todayIncome').innerText);
-      if (todayIncome < 0.01) {
-        document.getElementById('todayIncome').innerText = '0.01 USDT';
-      }
-    }, 5000);
-
-    // Send init
-    if (tg) tg.sendData(JSON.stringify({action: "init", text: "Dashboard loaded!"}));
+    renderTasks(tasks);
+</script>
   </script>
 </body>
 </html>
+
